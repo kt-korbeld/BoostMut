@@ -1,4 +1,4 @@
-from .analysis import *
+from BoostMut.analysis import *
 from importlib import resources
 
 class BoostMut:
@@ -74,7 +74,7 @@ class BoostMut:
             self.WTsaltb = pd.DataFrame(data=saltb, index=mut_ids, columns=['p', 's', 'r'])
 
 
-    def do_analysis_mut(self, mut_universes, mut_ids=[], analyses='hrsc'):
+    def do_analysis_mut(self, mut_universes, mut_ids=[], analyses='hrsc', reject_trj=True):
         '''
         perform the full sets of analysis on a list of mutant universes, given the mutated resid
         the analyses are: h: do_hbond_analysis(), r: do_rmsf_analysis(), s: do sasa_analysis() c: do_other_checks()
@@ -82,7 +82,8 @@ class BoostMut:
         '''
         # reject trajectory with highest rmsd
         output = []
-        mut_universes = reject_traj(mut_universes)
+        if reject_trj:
+            mut_universes = reject_traj(mut_universes)
         # do hydrogen bond analysis and average output over all trajectories
         if 'h' in analyses:
             print('analyzing hydrogen bonds..')

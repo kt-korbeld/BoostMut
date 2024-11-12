@@ -14,8 +14,11 @@ from MDAnalysis.analysis.hydrogenbonds.hbond_analysis import HydrogenBondAnalysi
 from MDAnalysis.analysis import distances
 
 #from MDAnalysis.analysis import rms, align
-from MDAnalysis.analysis import rms
-from MDAnalysis.analysis import align
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from MDAnalysis.analysis import rms, align
+
 from MDAnalysis.analysis.base import AnalysisFromFunction
 
 # packages for secondary structure and solvent accesible surface
