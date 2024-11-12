@@ -16,7 +16,7 @@ input_directory
     ├── trajectory_5.xtc
     └── topology.tpr
 ```
-BoostMut is run in the commandline using:
+After installing, BoostMut is run in the command line using:
 ```
 boostmut -i input_directory
 ```
@@ -36,5 +36,11 @@ and the selections are specified using:
 * s : 8Å surrounding selection
 * r : residue selection
 
-BoostMut assumes 
+By default, BoostMut assumes each trajectory is 50ps long since the analyses of the sidechain RMSF and hydrophobic exposure rely on a comparison to benchmark data based on simulations of the same length. In case longer simulations are used, benchmarks up to 1ns in 50ps intervals are provided which can be specified by changing the benchmark files using the commandline interface:
+```
+boostmut -i input_directory_500ps -t 500
+```
+
+## Installation
+
 
