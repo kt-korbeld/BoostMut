@@ -8,15 +8,11 @@ As input, BoostMut requires a directory with subdirectories for the wildtype and
 ```
 input_directory
 ├── Subdir_D24K
-├── Subdir_K26R
-├── Subdir_Q121V
-├── Subdir_S21R
+├── ...
 ├── Subdir_T85V
 └── Subdir_template
     ├── trajectory_1.xtc
-    ├── trajectory_2.xtc
-    ├── trajectory_3.xtc
-    ├── trajectory_4.xtc
+    ├── ...
     ├── trajectory_5.xtc
     └── topology.tpr
 ```
