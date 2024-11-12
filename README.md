@@ -20,9 +20,9 @@ BoostMut is run in the commandline using:
 ```
 boostmut -i input_directory
 ```
-BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydrophobic surface exposure, and other structural checks. This can be done on three selections: the whole protein, 8Å surrounding a given mutation, or just the residue of the mutation. The final output returns a .csv with for each analysis and mutation the difference between mutant and wildtype. The analyses and the selections for each analysis can be customized in the command line. For example, if you only want the surrounding and residue selections for hydrogen bonding and RMSF, but the whole protein selection for the other analyses, this can be specified using:
+BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydrophobic surface exposure, and other structural checks. This can be done on three selections: the whole protein, 8Å surrounding a given mutation, or just the residue of the mutation. The final output returns a .csv with for each analysis and mutation the difference between mutant and wildtype. The analyses and the selections for each analysis can be customized in the command line. For example, if you want the surrounding and residue selections for hydrogen bonding, but only the whole protein selection for the other analyses, this can be specified using:
 ```
-boostmut -i input_directory -a hrsc -s hr:sr, sc:p 
+boostmut -i input_directory -a hrsc -s h:sr, rsc:p 
 ```
 where the analyses are specified using:
 * h : hydrogen bonding
