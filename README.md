@@ -30,7 +30,9 @@ where
 * r : RMSF of backbone and sidechains
 * s : hydrophobic surface exposure
 * c : other structural checks
+
 and
+
 * p : whole protein selection
 * s : 8Å surrounding selection
 * r : residue selection
