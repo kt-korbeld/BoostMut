@@ -18,7 +18,6 @@ import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     from MDAnalysis.analysis import rms, align
-
 from MDAnalysis.analysis.base import AnalysisFromFunction
 
 # packages for secondary structure and solvent accesible surface
@@ -537,14 +536,6 @@ def iterate_analysis(mut_universes, function, mut_ids=[]):
         out = [np.round(np.average(np.array([i,j]), axis=0), 4) for i, j in zip(out, vars_out)]
     return tuple(out)
 
-def write_sub_trajectory(universe, filename_out='out.xtc', start=0, end=0):
-    '''
-    given a trajectory, save a new one from start to end
-    '''
-    with MDAnalysis.Writer(filename_out) as W:
-        for ts in u.trajectory[start:end]:
-            W.write(u)
-
 def reject_traj(universes_in):
     '''
     given a list of multiple MDAnalysis universes,
@@ -571,18 +562,3 @@ def reject_traj(universes_in):
     worst_ind = np.where(np.array(avg_rmsd_universe) == max(avg_rmsd_universe))[0][0]
     universes_out.pop(worst_ind)
     return universes_out
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
