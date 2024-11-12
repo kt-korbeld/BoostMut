@@ -24,14 +24,13 @@ BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydropho
 ```
 boostmut -i input_directory -a hrsc -s hr:sr, sc:p 
 ```
-where 
-
+where the analyses are specified using:
 * h : hydrogen bonding
 * r : RMSF of backbone and sidechains
 * s : hydrophobic surface exposure
 * c : other structural checks
 
-and
+and the selections are specified using:
 
 * p : whole protein selection
 * s : 8Å surrounding selection
