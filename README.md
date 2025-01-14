@@ -3,7 +3,7 @@
 
 
 BoostMut is a python package to analyze high-throughput molecular dynamics simulations to investigate the effect of point mutations on stability.
-Since molecular dynamics simulations are costly, the simulations are short (50ps) and their analysis by BoostMut are meant to serve as a secondary filter after an initial selection has been made using a primary predictor such a FoldX. As input, BoostMut requires a directory with subdirectories for the wildtype and each of the mutations, each subdirectory in turn containing a set of short trajectories and a topology:
+Since molecular dynamics simulations are costly, the simulations are short (50ps-1ns) and their analysis by BoostMut are meant to serve as a secondary filter after an initial selection has been made using a primary predictor such a FoldX. As input, BoostMut requires a directory with subdirectories for the wildtype and each of the mutations, each subdirectory in turn containing a set of short trajectories and a topology:
 ```
 input_directory
 ├── Subdir_D24K
