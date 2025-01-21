@@ -110,7 +110,7 @@ class BoostMut:
             checks, saltb = iterate_analysis(mut_universes, self.do_other_checks, mut_ids)
             checks = np.average(np.array(checks), axis=0) - self.WTchecks.loc[mut_ids].values
             saltb = np.average(np.array(saltb), axis=0) - self.WTsaltb.loc[mut_ids].values
-            output.extend([checks, saltb])
+            output.extend([saltb, checks])
         # in case a mutant with multiple mutations is tested, average result of all mutations
         for i, out in enumerate(output):
             if out.shape[0] > 1:
