@@ -1,0 +1,109 @@
+[build-system]
+requires = [
+  "setuptools >=61.2",
+  "versioningit",
+  "numpy",
+  "pandas",
+  "MDAnalysis",
+  "pydssp",
+  "freesasa",
+  "xlsxwriter"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "BoostMut"
+description = "a python package to analyze short molecular dynamics simulations for the effect of point mutations on stability"
+license = {file = "LICENSE" }
+authors = [
+    {name = "Kerlen T. Korbeld", email = "k.t.korbeld@rug.nl"},
+]
+
+maintainers = [
+    {name = "Kerlen T. Korbeld", email = "k.t.korbeld@rug.nl"},
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "MDAnalysis>=2.0.0",
+]
+keywords = [
+    "molecular simulations",
+]
+dynamic = [
+    "version",
+]
+
+[project.scripts]
+boostmut_run = "BoostMut.run_BoostMut:main"
+boostmut_process="BoostMut.process_BoostMut:main"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=6.0",
+    "pytest-xdist>=2.5",
+    "pytest-cov>=3.0",
+]
+doc = [
+    "sphinx",
+    "sphinx_rtd_theme",
+]
+
+# [project.urls]
+# source = "https://github.com/kt-korbeld/BoostMut"
+# documentation = "https://BoostMut.readthedocs.io"
+
+[tool.setuptools.packages.find]
+include = ["BoostMut"]
+
+[tool.setuptools]
+include-package-data = true
+
+#[tool.setuptools.package-data]
+#BoostMut = ["benchmarks/*"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [
+    "BoostMut/tests",
+]
+
+[tool.black]
+line-length = 80
+
+[tool.versioningit]
+default-version = "1+unknown"
+
+[tool.versioningit.vcs]
+method = "git"
+# the below line expects tags to look like '1.0.2'.
+# if prefixing with a v, e.g. 'v1.0.2', change it to ["v*"]
+match = ["*"]
+
+[tool.versioningit.format]
+distance = "{base_version}+{distance}.{vcs}{rev}"
+dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
+distance-dirty = "{base_version}+{distance}.{vcs}{rev}.dirty"
+
+[tool.coverage.run]
+omit = [
+    # Omit the tests
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 80
+
+[tool.yapf]
+COLUMN_LIMIT = 80
+INDENT_WIDTH = 4
+USE_TABS = false
