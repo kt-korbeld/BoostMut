@@ -1,4 +1,4 @@
-from BoostMut.analysis import *
+from .analysis import *
 from importlib import resources
 
 class BoostMut:
