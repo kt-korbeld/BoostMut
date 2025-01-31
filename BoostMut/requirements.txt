@@ -1,5 +1,0 @@
-numpy
-pandas
-MDAnalysis==2.7.0
-pydssp
-freesasa
