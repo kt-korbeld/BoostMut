@@ -17,11 +17,11 @@ input_directory
 ```
 After installing, BoostMut is run in the command line.  using:
 ```
-boostmut -h
+boostmut_run -h
 ```
 BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydrophobic surface exposure, and other structural checks. This can be done on three selections: the whole protein, 8Å surrounding a given mutation, or just the residue of the mutation. The final output returns a .csv with for each analysis and mutation the difference between mutant and wildtype. The analyses and the selections for each analysis can be customized in the command line. For example, if you want the surrounding and residue selections for hydrogen bonding, but only the whole protein selection for the other analyses, this can be specified with the -a flag for specifying the analyses, and the -s flag specifying each selection given as output per analysis:
 ```
-boostmut -i input_directory -a hrsc -s h:sr, rsc:p 
+boostmut_run -i input_directory -a hrsc -s h:sr, rsc:p 
 ```
 where the analyses are specified using:
 * h : hydrogen bonding
@@ -37,8 +37,11 @@ and the selections are specified using:
 
 By default, BoostMut assumes each trajectory is 50ps long. The analyses for the sidechain RMSF and hydrophobic exposure rely on benchmark data for specific simulation lengths, and so will give erroneous results if the wrong timestep is given. The other analyses do not use benchmarks and therefore work the same regardless of timestep. In case longer simulations are used, benchmarks for each 50ps interval for simulations up to 1000ps long are provided. The appropriate benchmark files can be selected by providing the simulation length in the commandline interface:
 ```
-boostmut -i input_directory_500ps -t 500
+boostmut_run -i input_directory_500ps -t 500
 ```
+After the calculations have finished, the output can be processed with one of the tools in `boostmut_process` if needed. If the calculation of the mutations has been split up into separate parallel runs, the output has to be combined and rescaled. 
+Combining can be done using `boostmut_process combine`. Rescaling the newly combined output file, or adding additional metrics can be done using `boostmut_process scale`. To obtain an easy human-readable excel version of the data, use `boostmut_process excel`. 
+
 
 ## Installation
 
