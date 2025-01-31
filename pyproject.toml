@@ -2,12 +2,6 @@
 requires = [
   "setuptools >=61.2",
   "versioningit",
-  "numpy",
-  "pandas",
-  "MDAnalysis",
-  "pydssp",
-  "freesasa",
-  "xlsxwriter"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -17,6 +11,7 @@ description = "a python package to analyze short molecular dynamics simulations 
 license = {file = "LICENSE" }
 authors = [
     {name = "Kerlen T. Korbeld", email = "k.t.korbeld@rug.nl"},
+    {name = "Maximilian J.L.J. Fürst", email = "m.j.l.j.furst@rug.nl"}
 ]
 
 maintainers = [
@@ -26,6 +21,11 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "MDAnalysis>=2.0.0",
+    "numpy",
+    "pandas",
+    "pydssp",
+    "freesasa",
+    "xlsxwriter"
 ]
 keywords = [
     "molecular simulations",
