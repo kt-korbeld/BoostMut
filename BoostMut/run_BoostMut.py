@@ -1,7 +1,7 @@
 import argparse
 import warnings
-from BoostMut.BoostMut_class import BoostMut
-from BoostMut.utils import *
+from .BoostMut_class import BoostMut
+from .utils import *
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
     basic_group.add_argument('-m', '--mutfile', default="", help='file containing a list of mutations to analyze, if kept default, will analyze all mutations in input directory')
     basic_group.add_argument('-a', '--analysis', default='hrsc', help='reported analysis in output h:hydrogen bond analysis, r:rmsf analysis, s:sasa analysis, c:other structural checks ')
     basic_group.add_argument('-s', '--selection', default='hrs:sr, c:p', help='reported selections per analysis, p: whole protein, s:surrounding of mutation, r:just the mutation')
-    basic_group.add_argument('-t', '--time', default=50, help='trajectory length in ps')
+    basic_group.add_argument('-t', '--time', default='50', help='length of the trajectory in picoseconds')
 
     advanced_group = parser.add_argument_group('Advanced Arguments')
     advanced_group.add_argument('-n1', '--wtname', default='Subdir_template', help='subdirectory for the wildtype')
@@ -23,16 +23,14 @@ def main():
     advanced_group.add_argument('-n4', '--trajname', default='^[\w\d].*\.xtc$', help='regex each of the trajectory files has to satify')
     advanced_group.add_argument('-n5', '--bondsname', default="", help='regex for seperate files with bondinfo if the topologies do not contain it')
     advanced_group.add_argument('-gb', '--guessbonds', default=False, help='lets MDAnalysis guess bonds, making the calculations significantly slower')
+    advanced_group.add_argument('-sf', '--sasafile', help='name of custom file containing the benchmarks of residue sasa located in benchmarks')
+    advanced_group.add_argument('-rf', '--rmsffile', help='name of custom file containing the benchmarks for sidechain rmsf located in benchmarks')
     advanced_group.add_argument('-rs', '--rangesur', default=8, help='range around the mutation used in the surrounding selection in Å')
     advanced_group.add_argument('-rt', '--rejecttraj', default=True, help='if set to True, rejects the trajectory with highest RMSD for each mutation')
     advanced_group.add_argument('-lc', '--lastcheck', default="", help='filename of the .csv from the last checkpoint from which to continue')
     advanced_group.add_argument('-cp', '--checkpoint', default=True, help='if set to True, saves the result after each mutation')
     args = parser.parse_args()
 
-    # check the timestep
-    if args.time not in [*range(50, 1050, 50)]:
-        raise Exception('time should be between 50ps and 1000ps with intervals of 50ps')
-    rmsf_file, sasa_file = 'range_rmsf_{}.csv'.format(time), 'range_sasa_{}.csv'.format(time)
     # exclude mutations already analyzed in .csv given by --lastcheck
     if len(args.lastcheck) > 0:
         df_done = pd.read_csv(args.lastcheck, index_col=0)
@@ -62,9 +60,20 @@ def main():
         if cols_sel != list(df_done.columns):
             raise Exception('Columns do not match last checkpoint, make sure the same analyses and selections are used')
 
+    # get the right benchmark curves, overwrite specified time if custom benchmark files are provided
+    if args.sasafile == None:
+        sasa_file = 'range_sasa_{}ps.csv'.format(args.time)
+    else:
+        sasa_file = args.sasafile
+    if args.rmsffile == None:
+        rmsf_file = 'range_rmsf_{}ps.csv'.format(args.time)
+    else:
+        rmsf_file = args.rmsffile
+    print('using benchmark files:', sasa_file, rmsf_file)
+
     # load WT trajectories into MDAnalysis and initialize BoostMut with the WT analysis
     wt_universes = load_universes(wt_path, topname=args.topname, trajname=args.trajname, bondstabname=args.bondsname, guess_bonds=args.guessbonds)
-    boostmut = BoostMut(wt_universes, mut_ids=sorted(list(set(mutpos))), rmsf_loc=rmsffile, sasa_loc=sasafile, reject_trj=args.rejecttraj)
+    boostmut = BoostMut(wt_universes, mut_ids=sorted(list(set(mutpos))), rmsf_loc=rmsf_file, sasa_loc=sasa_file, reject_trj=args.rejecttraj)
     boostmut.do_analysis_WT(mut_ids=sorted(list(set(mutpos))), analyses=args.analysis)
 
     # go over each of the mutations and analyze

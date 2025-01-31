@@ -73,7 +73,7 @@ def load_universes(dir_path, topname, trajname, bondstabname='', guess_bonds=Fal
              universes = []
     return universes
 
-def scale_df(df_in):
+def scale_df(df_in, scale_custom={}, returnmap=False):
     '''
     Takes in a dataframe with the final results and scales each value according to stdev,
     and multiplies with 1 or -1 depending on wether an increase is good or bad.
@@ -86,13 +86,46 @@ def scale_df(df_in):
                         'hpsasa_p':1, 'hpsasa_s':1, 'hpsasa_r':1,
                         'saltb_p':1, 'saltb_s':1, 'saltb_r':1,
                         'capcount':1, 'helicity':-1, 'disulfide':1}
+    scale_complete = betterorworsemap|scale_custom
+    if returnmap:
+        return scale_complete
     #flip sign depending on whether an increase in the metric is good or bad
     std_df = df_in.std()
     std_df[std_df == 0] = 0.1
     df_scaled = df_in/std_df
     for col in df_scaled.columns:
-       	df_scaled[col] = df_scaled[col]*betterorworsemap[col]
+       	df_scaled[col] = df_scaled[col]*scale_complete[col]
+    df_scaled = df_scaled.round(4)
     return df_scaled
+
+def get_custom_scale(df_in, names, scales):
+    '''
+    given a set of names and scales, match the two into a custom scale map
+    if only partial data is provided, use defaults to make reasonable assumptions
+    '''
+    standard_cols = scale_df(df_in, returnmap=True)
+    nonstandard_cols = [i for i in df_in.columns if not i in standard_cols]
+    print('found {} non-standard columns: '.format(len(nonstandard_cols)), nonstandard_cols)
+    # if no nonstandard cols are present, ignore names and scales
+    if len(nonstandard_cols) == 0:
+        return {}
+    # if no col names and a single scale is provided, scale all nonstandard cols by 1
+    elif len(names) == 0 and len(scales) == 1:
+        print('using scaling factor: {} for all columns: '.format(scales), nonstandard_cols)
+        custom_scale = {i:j for i,j in zip(nonstandard_cols, len(nonstandard_cols)*scales)}
+    # if no col names and provided scales matches the number nonstandard cols, use provided scale
+    elif len(names) == 0  and len(scales) == len(nonstandard_cols):
+        print('matching scaling factors {} to columns: {}'.format(scales, nonstandard_cols))
+        custom_scale = {i:j for i,j in zip(nonstandard_cols, scales)}
+    # if col names are provided but a mismatch exists, raise error
+    elif len([i for i in nonstandard_cols if not i in names]) > 0:
+        raise ValueError("specified column names do not match all nonstandard columns in input:", nonstandard_cols)
+    elif len(scales) != len(names):
+        raise ValueError("specified column names do not match number of scaling factors", names, scales)
+    else:
+        print('matching scaling factors {} to columns: {}'.format(scales, names))
+        custom_scale = {i:j for i,j in zip(names, scales)}
+    return custom_scale
 
 def get_mutinfo(input_dir, mut_regex, mutfile, exclude=[]):
     '''
@@ -150,3 +183,66 @@ def get_columnnames(analyses='hrsc', selection='hrs:sr, c:p'):
             else:
                 columns.extend([c+'_'+i for i in 'psr' if i in sel_dict[an]])
     return columns
+
+def generate_excel(df_in, excel_out):
+    '''
+    given a dataframe with scaled output values, returns a formatted excel sheet
+    '''
+    df_out = df_in.copy()
+    # calculate total score if not present
+    if not 'total_score' in df_in.columns:
+        df_out['total_score'] = df_in.sum(axis=1).values
+    # put total score in first column and sort mutations by total score
+    df_out = df_out[['total_score']+[i for i in df_out.columns if i != 'total_score']]
+    df_out = df_out.sort_values(by='total_score', ascending=False)
+    if excel_out[-5:] != '.xlsx':
+         excel_out = excel_out+'.xlsx'
+    writer = pd.ExcelWriter(excel_out, engine='xlsxwriter')
+    df_out.to_excel(writer, sheet_name='Sheet1')
+    workbook  = writer.book
+    worksheet = writer.sheets['Sheet1']
+    (max_row, max_col) = df_in.shape
+    for i, col in enumerate(df_in.columns):
+        if col != 'total_score':
+            worksheet.conditional_format(1, 1, max_row, i+1,
+                                         {'type': '3_color_scale',
+                                          'minimum':-5, 'maximum':5,
+                                          'min_color':'#E77270', 'mid_color':'#FFFFFF', 'max_color':'#6488C1'})
+        else:
+                worksheet.conditional_format(1, 1, max_row, i+1,
+                                         {'type': '3_color_scale',
+                                          'min_color':'#E77270', 'mid_color':'#FFFFFF', 'max_color':'#6488C1'})
+    number_format = workbook.add_format({'num_format': '0.00'})
+    worksheet.set_column(1,max_row,None,number_format)
+    writer.close()
+
+
+def combine_df(df_set=[]):
+    df_complete = []
+    for df in df_set:
+        if len(df_complete) == 0:
+            df_complete = df.copy()
+            continue
+        df_i = [i for i in df.index if i not in df_complete.index]
+        for i in df_i:
+            df_complete.loc[i] = df.loc[i]
+    return df_complete
+
+def add_predictors(df_in, predictors, pred_cols, pred_names):
+    df_out = df_in.copy()
+    # if only one name/column is specified but more files exist, extrapolate
+    if pred_names == ['primary_pred'] and len(predictors) > 1:
+        score_names = ['primary_pred_'+i for i in range(len(predictors))]
+    else:
+        score_names = pred_names
+    if len(pred_cols) == 1 and len(predictors) > 1:
+        score_cols = len(predictors)*pred_cols
+    else:
+        score_cols = pred_cols
+    # load in each specified additional predictor
+    for file, col, nam in zip(predictors, score_cols, score_names):
+        df_score = pd.read_csv(file, index_col=0)
+        df_out[nam] = df_score.loc[df_out.index].values
+    return df_out
+
+

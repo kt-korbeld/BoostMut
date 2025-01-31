@@ -14,10 +14,8 @@ from MDAnalysis.analysis.hydrogenbonds.hbond_analysis import HydrogenBondAnalysi
 from MDAnalysis.analysis import distances
 
 #from MDAnalysis.analysis import rms, align
-import warnings
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    from MDAnalysis.analysis import rms, align
+from MDAnalysis.analysis import rms
+from MDAnalysis.analysis import align
 from MDAnalysis.analysis.base import AnalysisFromFunction
 
 # packages for secondary structure and solvent accesible surface
@@ -429,6 +427,21 @@ def get_sel_sasa(universe_in, selection, sum_out=False):
 # miscelaneous functions
 # =======================================================================================================
 
+def load_benchmark_data(filename, location='BoostMut.benchmarks'):
+    '''
+    for a given location, load the benchmark data in a df and return the df
+    '''
+    # first look for filename in directory with benchmarks
+    #with resources.open_text(location, filename) as file:
+    #    df = pd.read_csv(file, index_col=0)
+    try:
+        with resources.open_text(location, filename) as file:
+            df = pd.read_csv(file, index_col=0)
+    # if that doesnt work, try reading in filename directly
+    except:
+        df = pd.read_csv(filename, index_col=0)
+    return df
+
 def get_surround_sel(universe_in, selection, dist_cutoff=8, byres='byres'):
     '''
     the 'around' keyword in MDAnalysis is sometimes unreliable
@@ -482,14 +495,6 @@ def get_good_range_ix(res, firstres, lastres, ref_len):
         ix_res_range = [res.ix-ref_len, res.ix+ref_len]
     return [*range(*ix_res_range)]
 
-def load_benchmark_data(filename, location='BoostMut.benchmarks'):
-    '''
-    for a given location, load the benchmark data in a df and return the df
-    '''
-    with resources.open_text(location, filename) as file:
-        df = pd.read_csv(file, index_col=0)
-    return df
-
 def find_xy_dens(dens_df, classification):
     '''
     given a classification ('ARG-buried'), finds the curve of expected values
@@ -536,6 +541,14 @@ def iterate_analysis(mut_universes, function, mut_ids=[]):
         out = [np.round(np.average(np.array([i,j]), axis=0), 4) for i, j in zip(out, vars_out)]
     return tuple(out)
 
+def write_sub_trajectory(universe, filename_out='out.xtc', start=0, end=0):
+    '''
+    given a trajectory, save a new one from start to end
+    '''
+    with MDAnalysis.Writer(filename_out) as W:
+        for ts in u.trajectory[start:end]:
+            W.write(u)
+
 def reject_traj(universes_in):
     '''
     given a list of multiple MDAnalysis universes,
@@ -562,3 +575,18 @@ def reject_traj(universes_in):
     worst_ind = np.where(np.array(avg_rmsd_universe) == max(avg_rmsd_universe))[0][0]
     universes_out.pop(worst_ind)
     return universes_out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
