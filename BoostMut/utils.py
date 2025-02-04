@@ -154,7 +154,7 @@ def get_mutinfo(input_dir, mut_regex, mutfile, exclude=[]):
     print('number of mutations: ', len(mutant_paths))
     return mutsel, resnrs, mutant_paths
 
-def get_columnnames(analyses='hrsc', selection='hrs:sr, c:p'):
+def get_columnnames(analyses='hrsc', selection=['hrs:sr', 'c:p']):
     '''
     given an input specifying a set of analyses and selections,
     return the right set of columnnames in the right order for the dataframe
@@ -164,7 +164,7 @@ def get_columnnames(analyses='hrsc', selection='hrs:sr, c:p'):
     nosels = ['capcount','helicity','disulfide']
     # generate a dictionary mapping each analysis to a selection
     sel_dict = {}
-    for entry in selection.split(','):
+    for entry in selection:
         entry = entry.strip().split(':')
         sel_dict = sel_dict | {i:entry[-1] for i in entry[0]}
     columns = []

@@ -3,6 +3,7 @@ import re
 import os
 import itertools
 from importlib import resources
+import warnings
 
 # common data analysis packages
 import pandas as pd
@@ -13,9 +14,13 @@ from MDAnalysis import Universe
 from MDAnalysis.analysis.hydrogenbonds.hbond_analysis import HydrogenBondAnalysis
 from MDAnalysis.analysis import distances
 
-#from MDAnalysis.analysis import rms, align
+# align function comes with a weird BioDepricationWarning, ignore
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore",  module="Bio")
+    from MDAnalysis.analysis import align
 from MDAnalysis.analysis import rms
-from MDAnalysis.analysis import align
+
+#from MDAnalysis.analysis import align
 from MDAnalysis.analysis.base import AnalysisFromFunction
 
 # packages for secondary structure and solvent accesible surface

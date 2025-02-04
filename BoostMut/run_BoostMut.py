@@ -13,7 +13,7 @@ def main():
     basic_group.add_argument('-o', '--output', default='BoostMut_out.csv', help='name of the output .csv')
     basic_group.add_argument('-m', '--mutfile', default="", help='file containing a list of mutations to analyze, if kept default, will analyze all mutations in input directory')
     basic_group.add_argument('-a', '--analysis', default='hrsc', help='reported analysis in output h:hydrogen bond analysis, r:rmsf analysis, s:sasa analysis, c:other structural checks ')
-    basic_group.add_argument('-s', '--selection', default='hrs:sr, c:p', help='reported selections per analysis, p: whole protein, s:surrounding of mutation, r:just the mutation')
+    basic_group.add_argument('-s', '--selection', default=['hrs:sr', 'c:p'], nargs='+', help='reported selections per analysis, p: whole protein, s:surrounding of mutation, r:just the mutation')
     basic_group.add_argument('-t', '--time', default='50', help='length of the trajectory in picoseconds')
 
     advanced_group = parser.add_argument_group('Advanced Arguments')
@@ -54,8 +54,10 @@ def main():
         raise Exception('no mutant directories found using regex pattern')
 
     # get column names of output df
-    cols_full = get_columnnames(analyses=args.analysis, selection='psr')
+    cols_full = get_columnnames(analyses=args.analysis, selection=['hrsc:psr'])
     cols_sel = get_columnnames(analyses=args.analysis, selection=args.selection)
+    print(cols_full)
+    print(cols_sel)
     if len(args.lastcheck) > 0:
         if cols_sel != list(df_done.columns):
             raise Exception('Columns do not match last checkpoint, make sure the same analyses and selections are used')
