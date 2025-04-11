@@ -514,8 +514,17 @@ def get_saltbridge(universe_in, selection, distance=4):
     '''
     for a given universe, finds number of saltbridges present
     '''
-    sel_sb_pos = '(resname ARG or resname LYS and type N and not backbone)'
-    sel_sb_neg = '(resname ASP or resname GLU and type O and not backbone)'
+    prot = universe_in.select_atoms('protein')
+    maxresid, minresid = np.max(prot.residues.resnums), np.min(prot.residues.resnums)
+    # selects the free amine and carboxyl groups at the N and C-terminus
+    sel_nterm = '(type N and backbone and resid {})'.format(minresid)
+    sel_cterm = '(type O and backbone and resid {})'.format(maxresid)
+    # selects all the charged groups in the sidechains
+    sel_sc_pos = '(resname ARG or resname LYS or resname HIS and type N and not backbone)'
+    sel_sc_neg = '(resname ASP or resname GLU and type O and not backbone)'
+    # combine N-terminus with other positive groups, and C-terminus with other negative groups
+    sel_pos = '{} or {}'.format(sel_nterm, sel_sc_pos)
+    sel_neg = '{} or {}'.format(sel_cterm, sel_sc_neg)
     # find all positive res engaged in a saltbridge and all negative res engaged in a salt bridge
     sb_pos = universe_in.select_atoms('({0} and around {3} {1}) and {2}'.format(sel_sb_pos, sel_sb_neg, selection, distance))
     sb_neg = universe_in.select_atoms('({1} and around {3} {0}) and {2}'.format(sel_sb_pos, sel_sb_neg, selection, distance))
@@ -551,8 +560,8 @@ def write_sub_trajectory(universe, filename_out='out.xtc', start=0, end=0):
     given a trajectory, save a new one from start to end
     '''
     with MDAnalysis.Writer(filename_out) as W:
-        for ts in u.trajectory[start:end]:
-            W.write(u)
+        for ts in universe.trajectory[start:end]:
+            W.write(universe)
 
 def reject_traj(universes_in):
     '''

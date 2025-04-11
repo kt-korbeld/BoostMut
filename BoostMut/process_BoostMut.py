@@ -57,8 +57,8 @@ def main():
         # if specified, exclude metrics from total score
         if len(args.exclude_metric) > 0:
             print('excluding {} from total score'.format(args.exclude_metric))
-        cols_total_score = [i for i in df_scaled.columns if not i in args.exclude_metric]
-        df_scaled['total_score'] = np.round(df_scaled[cols_total_score].sum(axis=1).values, 4)
+        cols_mean_score = [i for i in df_scaled.columns if not i in args.exclude_metric]
+        df_scaled['total_score'] = np.round(df_scaled[cols_mean_score].mean(axis=1).values, 4)
         df_scaled.to_csv(args.output)
         print('output saved as ', args.output)
 
