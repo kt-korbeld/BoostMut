@@ -147,10 +147,10 @@ def get_mutinfo(input_dir, mut_regex, mutfile, exclude=[]):
     if len(exclude) > 0:
         mutsel = [i for i in mutsel if i not in exclude]
     # get the resnrs,  dirs and full path only for the selected mutations
-    resnrs = [int(re.findall('[0-9]+', i)[0]) for i in mutant_dirs]
     mutant_dirs = [mut for mut in mutant_dirs if any([i in mut for i in mutsel])]
     mutant_paths  = [os.path.join(input_dir, mut) for mut in mutant_dirs if os.path.isdir(os.path.join(input_dir, mut))]
     mutant_paths.sort(key=lambda x: int(re.findall(r'\d+',x)[-1]))
+    resnrs = [int(re.findall('[0-9]+', i)[0]) for i in mutant_dirs]
     print('number of mutations: ', len(mutant_paths))
     return mutsel, resnrs, mutant_paths
 
