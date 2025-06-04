@@ -1,0 +1,17 @@
+{
+    "mutations": "248",
+    "identifiers": "1",
+    "avg_mut": "1.0",
+    "mut_positive": "68",
+    "mut_negative": "7",
+    "mut_no_charge": "173",
+    "mut_acidic": "7",
+    "mut_basic": "68",
+    "mut_aromatic": "66",
+    "mut_aliphatic": "64",
+    "mut_hydroxyl": "11",
+    "mut_sulfur": "12",
+    "mut_amide": "20",
+    "mut_nonpolar": "159",
+    "mut_polar": "89"
+}
