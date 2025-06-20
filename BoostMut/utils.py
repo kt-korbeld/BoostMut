@@ -154,21 +154,28 @@ def get_mutinfo(input_dir, mut_regex, mutfile, exclude=[]):
     print('number of mutations: ', len(mutant_paths))
     return mutsel, resnrs, mutant_paths
 
-def get_columnnames(analyses='hrsc', selection=['hrs:sr', 'c:p']):
+def get_columnnames(selection=['hbse:sr', 'c:p']):
     '''
     given an input specifying a set of analyses and selections,
     return the right set of columnnames in the right order for the dataframe
     '''
-    analyses_map = {'h':['e_hbonds', 'hbonds_unsat'], 'r':['rmsf_bb', 'score_sc'],
-                    's':['hpsasa'], 'c':['saltb', 'capcount','helicity','disulfide']}
+    analyses_map = {'h':['e_hbonds', 'hbonds_unsat'], 'b':['rmsf_bb'], 's':['score_sc'],
+                    'e':['hpsasa'], 'c':['saltb', 'capcount','helicity','disulfide']}
     nosels = ['capcount','helicity','disulfide']
+    analyses = "".join([i.split(':')[0] for i in selection])
+    analyses = "".join([i for i in analyses if i in 'hbsec'])
     # generate a dictionary mapping each analysis to a selection
     sel_dict = {}
     for entry in selection:
         entry = entry.strip().split(':')
-        sel_dict = sel_dict | {i:entry[-1] for i in entry[0]}
+        if len(entry) != 2:
+            sel = 'psr'
+        else:
+            sel = entry[-1]
+        sel_dict = sel_dict | {i:sel for i in entry[0]}
+    print(sel_dict)
     columns = []
-    for an in 'hrsc':
+    for an in 'hbsec':
         # if analysis is not specified, skip
         if not an in analyses:
             continue

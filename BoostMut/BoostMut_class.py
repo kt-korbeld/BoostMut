@@ -2,12 +2,14 @@ from .analysis import *
 from importlib import resources
 
 class BoostMut:
-    def __init__(self, WT_universes, mut_ids=[], rmsf_loc='range_rmsf.csv', sasa_loc='range_sasa.csv', reject_trj=True):
+    def __init__(self, WT_universes, mut_ids=[], rmsf_loc='range_rmsf.csv', sasa_loc='range_sasa.csv', reject_trj=True, step=1):
         '''
         Since each metric is compared with the WT, and each metric is checked for different selections,
         the WT results for each metrics must be stored before a selection is made.
         the results for each residue are stored in a dataframe with one resid per column
         '''
+        # define stepsize when going through trajectory (1 = everything read)
+        self.step = step
         #reject worst trajectory from set if reject_trj is True
         if reject_trj:
             self.WT_universes = reject_traj(WT_universes)
@@ -37,7 +39,7 @@ class BoostMut:
         self.WTchecks = []
         self.WTsaltb = []
 
-    def do_analysis_WT(self, mut_ids=[], analyses='hrsc'):
+    def do_analysis_WT(self, mut_ids=[], analyses='hbsec'):
         '''
         Since each metric is compared with the WT, and each metric is checked for different selections,
         the WT results for each metrics must be stored before a selection is made.
@@ -54,14 +56,18 @@ class BoostMut:
             e_hbonds, hbonds_unsat = iterate_analysis(self.WT_universes, self.do_hbond_analysis, mut_ids)
             self.WTe_hbonds = pd.DataFrame(data=e_hbonds, index=mut_ids, columns=['p','s','r'])
             self.WThbonds_unsat = pd.DataFrame(data=hbonds_unsat, index=mut_ids, columns=['p','s','r'])
-        # do RMSF analysis and average output over WT trajectories
-        if 'r' in analyses:
-            print('analyzing RMSF of backbone and sidechains..')
-            rmsf_bb, score_sc = iterate_analysis(self.WT_universes, self.do_rmsf_analysis, mut_ids)
+        # do RMSF analysis of backbone and average output over WT trajectories
+        if 'b' in analyses:
+            print('analyzing RMSF of the backbone..')
+            rmsf_bb = iterate_analysis(self.WT_universes, self.do_rmsf_bb_analysis, mut_ids)
             self.WTrmsf_bb = pd.DataFrame(data=rmsf_bb, index=mut_ids, columns=['p','s','r'])
-            self.WTscore_sc = pd.DataFrame(data=score_sc, index=mut_ids, columns=['p','s','r'])
-        # do hydrophobic SASA analysis and average output over WT trajectories
+        # do RMSF analysis of sidechains and average output over WT trajectories
         if 's' in analyses:
+            print('analyzing RMSF of the sidechains..')
+            score_sc = iterate_analysis(self.WT_universes, self.do_rmsf_sc_analysis, mut_ids)
+            self.WTscore_sc = pd.DataFrame(data=score_sc, index=mut_ids, columns=['p','s','r'])
+        # do hydrophobic exposure analysis and average output over WT trajectories
+        if 'e' in analyses:
             print('analyzing exposed hydrophobic surface..')
             hpsasa, buried = iterate_analysis(self.WT_universes, self.do_sasa_analysis, mut_ids)
             self.WThp_sasa = pd.DataFrame(data=hpsasa, index=mut_ids, columns=['p','s','r'])
@@ -74,7 +80,7 @@ class BoostMut:
             self.WTsaltb = pd.DataFrame(data=saltb, index=mut_ids, columns=['p', 's', 'r'])
 
 
-    def do_analysis_mut(self, mut_universes, mut_ids=[], analyses='hrsc', reject_trj=True):
+    def do_analysis_mut(self, mut_universes, mut_ids=[], analyses='hbsec', reject_trj=True):
         '''
         perform the full sets of analysis on a list of mutant universes, given the mutated resid
         the analyses are: h: do_hbond_analysis(), r: do_rmsf_analysis(), s: do sasa_analysis() c: do_other_checks()
@@ -91,15 +97,20 @@ class BoostMut:
             e_hbonds -= self.WTe_hbonds.loc[mut_ids].values
             hbonds_unsat -= self.WThbonds_unsat.loc[mut_ids].values
             output.extend([e_hbonds, hbonds_unsat])
-        # do RMSF analysis and average output over all trajectories
-        if 'r' in analyses:
-            print('analyzing RMSF of backbone and sidechains..')
-            rmsf_bb, score_sc = iterate_analysis(mut_universes, self.do_rmsf_analysis, mut_ids)
+        # do RMSF backbone analysis and average output over all trajectories
+        if 'b' in analyses:
+            print('analyzing RMSF of the backbone..')
+            rmsf_bb = iterate_analysis(mut_universes, self.do_rmsf_bb_analysis, mut_ids)
             rmsf_bb -= self.WTrmsf_bb.loc[mut_ids].values
-            score_sc -= self.WTscore_sc.loc[mut_ids].values
-            output.extend([rmsf_bb, score_sc])
-        # do sasa analysis and average output over all trajectories
+            output.extend([rmsf_bb])
+        # do RMSF sidechain analysis and average output over all trajectories
         if 's' in analyses:
+            print('analyzing RMSF of the sidechains..')
+            score_sc = iterate_analysis(mut_universes, self.do_rmsf_sc_analysis, mut_ids)
+            score_sc -= self.WTscore_sc.loc[mut_ids].values
+            output.extend([score_sc])
+        # do hydrophobic exposure analysis and average output over all trajectories
+        if 'e' in analyses:
             print('analyzing exposed hydrophobic surface..')
             hp_sasa, buried = iterate_analysis(mut_universes, self.do_sasa_analysis, mut_ids)
             hp_sasa -= self.WThp_sasa.loc[mut_ids].values
@@ -181,7 +192,41 @@ class BoostMut:
             outputs_unsat_allmuts.append(outputs_unsat)
         return np.array(outputs_e_allmuts), np.array(outputs_unsat_allmuts)
 
-    def do_rmsf_analysis(self, universe_in, ref_len=1, mut_ids=[]):
+    def do_rmsf_bb_analysis(self, universe_in, mut_ids=[]):
+        '''
+        perform a rmsf analysis. inputs require a universe and the resid of the mutated residue.
+        the rmsf analysis is done on 3 selections:
+        - the whole protein
+        - 8A around the residue
+        - just the residue
+        outtput gives the average rmsf of the backbone atoms for each selection
+        '''
+        # get average structure and calculate rmsf of backbone
+        prot = universe_in.select_atoms('protein')
+        average = align.AverageStructure(universe_in, universe_in, select='name CA and protein', ref_frame=0).run()
+        average = average.results.universe
+        aligner = align.AlignTraj(universe_in, average, select='name CA and protein', in_memory=True).run()
+        c_alphas = universe_in.select_atoms('name CA and protein')
+        rmsf_bb = rms.RMSF(c_alphas).run()
+        rmsf_bb = rmsf_bb.results.rmsf
+        # turn into a dataframe to access the right values using resids
+        rmsf_bb_out = []
+        df_rmsf_bb = pd.DataFrame(data=rmsf_bb, index=prot.residues.resids)
+        # for reach residue return average values for the protein, surrounding, and residue
+        for resid in mut_ids:
+            rmsf_bb_res = []
+            resids_s = self.WTsurround_sel.loc[resid].values
+            resids_s = resids_s[~np.isnan(resids_s)].astype(int)
+            surround_ids = list(set(resids_s))
+            selections = [prot.residues.resids, surround_ids, resid]
+            for selection in selections:
+                rmsf_bb_sel = np.average(df_rmsf_bb.loc[selection].values)
+                rmsf_bb_res.append(rmsf_bb_sel)
+            rmsf_bb_out.append(rmsf_bb_res)
+        return np.array(rmsf_bb_out)
+
+
+    def do_rmsf_sc_analysis(self, universe_in, ref_len=1, mut_ids=[]):
         '''
         perform a rmsf analysis. inputs require a universe and the resid of the mutated residue.
         the rmsf analysis is done on 3 selections:
@@ -194,13 +239,6 @@ class BoostMut:
           The sidechain score is between 1 to 0 depending on if it is less or more flexible compared
           to the average distribution of amino acids of the same type and solvent exposure.
         '''
-        # get average structure and calculate rmsf of backbone
-        average = align.AverageStructure(universe_in, universe_in, select='name CA and protein', ref_frame=0).run()
-        average = average.results.universe
-        aligner = align.AlignTraj(universe_in, average, select='name CA and protein', in_memory=True).run()
-        c_alphas = universe_in.select_atoms('name CA and protein')
-        rmsf_bb = rms.RMSF(c_alphas).run()
-        rmsf_bb = rmsf_bb.results.rmsf
         # calculate rmsf of the sidechains, excluding hydrogen
         rmsf_res = []
         prot = universe_in.select_atoms('protein')
@@ -234,24 +272,21 @@ class BoostMut:
             res_score.append(dens_to_score(rmsf, *find_xy_dens(self.rmsf_range, res_cl))[0])
         res_score = np.array(res_score)
         # turn into a dataframe to access the right values using resids
-        rmsf_bb_out, score_sc_out = [], []
+        score_sc_out = []
         df_rmsf_bb = pd.DataFrame(data=rmsf_bb, index=prot.residues.resids)
         df_score_sc = pd.DataFrame(data=res_score, index=prot.residues.resids)
         # for reach residue return average values for the protein, surrounding, and residue
         for resid in mut_ids:
-            rmsf_bb_res, score_sc_res = [], []
+            score_sc_res = []
             resids_s = self.WTsurround_sel.loc[resid].values
             resids_s = resids_s[~np.isnan(resids_s)].astype(int)
             surround_ids = list(set(resids_s))
             selections = [prot.residues.resids, surround_ids, resid]
             for selection in selections:
-                rmsf_bb_sel = np.average(df_rmsf_bb.loc[selection].values)
                 score_sc_sel = np.average(df_score_sc.loc[selection].values)
-                rmsf_bb_res.append(rmsf_bb_sel)
                 score_sc_res.append(score_sc_sel)
-            rmsf_bb_out.append(rmsf_bb_res)
             score_sc_out.append(score_sc_res)
-        return np.array(rmsf_bb_out), np.array(score_sc_out)
+        return np.array(score_sc_out)
 
     def do_sasa_analysis(self, universe_in, mut_ids=[]):
         '''

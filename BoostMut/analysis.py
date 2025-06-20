@@ -213,10 +213,10 @@ def get_unsat(universe_in, hbonds_real, selection, unsat_penalty=1, return_all=F
     '''
     frames = [i.frame for i in universe_in.trajectory]
     # all atoms that can form hbonds within selection
-    hbond_sel = ('protein and ((type H and bonded ((type O or type N))) or'
-                '(type O or (type N and not bonded type H)))')
+    hbond_sel = ('protein and ((element H and bonded ((element O or element N))) or'
+                '(element O or (element N and not bonded element H)))')
     # narrow down selection to non-carbons in protein before doing expensive bond checking
-    prot_nc = universe_in.select_atoms('protein and not type C')
+    prot_nc = universe_in.select_atoms('protein and not element C')
     hbond_atm = prot_nc.select_atoms('({}) and ({})'.format(hbond_sel, selection)).indices
     hbonds_ha = hbonds_real[:,[2,3]].astype(int)
     if return_all:
@@ -410,7 +410,7 @@ def get_hydrocarb_sasa(universe_in):
     gets the total sasa for all the hydrocarbon atoms (i.e carbons or hydrogens attached to carbons)
     '''
     sasa_atom = get_sasa(universe_in, selection='A')
-    hydrocarb = universe_in.select_atoms('type C or type H and bonded type C')
+    hydrocarb = universe_in.select_atoms('element C or element H and bonded element C')
     hydrocarb_sasa = sum([sasa for sasa, atom in zip(sasa_atom, universe_in.atoms) if atom in hydrocarb])
     return hydrocarb_sasa
 
@@ -517,11 +517,11 @@ def get_saltbridge(universe_in, selection, distance=4):
     prot = universe_in.select_atoms('protein')
     maxresid, minresid = np.max(prot.residues.resnums), np.min(prot.residues.resnums)
     # selects the free amine and carboxyl groups at the N and C-terminus
-    sel_nterm = '(type N and backbone and resid {})'.format(minresid)
-    sel_cterm = '(type O and backbone and resid {})'.format(maxresid)
+    sel_nterm = '(element N and backbone and resid {})'.format(minresid)
+    sel_cterm = '(element O and backbone and resid {})'.format(maxresid)
     # selects all the charged groups in the sidechains
-    sel_sc_pos = '(resname ARG or resname LYS or resname HIS and type N and not backbone)'
-    sel_sc_neg = '(resname ASP or resname GLU and type O and not backbone)'
+    sel_sc_pos = '(resname ARG or resname LYS or resname HIS and element N and not backbone)'
+    sel_sc_neg = '(resname ASP or resname GLU and element O and not backbone)'
     # combine N-terminus with other positive groups, and C-terminus with other negative groups
     sel_pos = '{} or {}'.format(sel_nterm, sel_sc_pos)
     sel_neg = '{} or {}'.format(sel_cterm, sel_sc_neg)
@@ -536,7 +536,7 @@ def get_disulfide(universe_in):
     counts number of disulfide bonds in a given
     '''
     disulfidebond = 0
-    for bond in universe_in.select_atoms('type S').bonds:
+    for bond in universe_in.select_atoms('element S').bonds:
         residues = bond.atoms.residues.resnames
         if np.all(residues == 'CYS') and len(residues) == 2:
             disulfidebond+=1
