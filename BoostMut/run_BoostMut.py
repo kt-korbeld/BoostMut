@@ -12,19 +12,19 @@ def main():
     basic_group.add_argument('-i', '--inputdir', required=True, type=str, help='input directory containing subdirectories with trajectories for each mutation')
     basic_group.add_argument('-o', '--output', default='BoostMut_out.csv', help='name of the output .csv')
     basic_group.add_argument('-m', '--mutfile', default="", help='file containing a list of mutations to analyze, if kept default, will analyze all mutations in input directory')
-    #basic_group.add_argument('-a', '--analysis', default='hrsc', help='reported analysis in output h:hydrogen bond analysis, r:rmsf analysis, s:sasa analysis, c:other structural checks ')
     basic_group.add_argument('-s', '--selection', default=['hbse:sr', 'c:p'], nargs='+', help='reported selections per analysis, p: whole protein, s:surrounding of mutation, r:just the mutation')
     basic_group.add_argument('-t', '--time', default='50', help='length of the trajectory in picoseconds')
+    basic_group.add_argument('-f', '--forcefield', default='amber99', help='forcefield with which the trajectory was run')
 
     advanced_group = parser.add_argument_group('Advanced Arguments')
     advanced_group.add_argument('-n1', '--wtname', default='Subdir_template', help='subdirectory for the wildtype')
     advanced_group.add_argument('-n2', '--mutname', default='Subdir_[A-Z][0-9]+[A-Z]', help='regex the subdirectories for each mutation has to satisfy')
-    advanced_group.add_argument('-n3', '--topname', default='^[\w\d].*bonds\.pdb$', help='regex each of the topology files has to satisfy')
+    advanced_group.add_argument('-n3', '--topname', default='^[\w\d].*\.tpr$', help='regex each of the topology files has to satisfy')
     advanced_group.add_argument('-n4', '--trajname', default='^[\w\d].*\.xtc$', help='regex each of the trajectory files has to satify')
     advanced_group.add_argument('-n5', '--bondsname', default="", help='regex for seperate files with bondinfo if the topologies do not contain it')
-    advanced_group.add_argument('-gb', '--guessbonds', default=False, help='lets MDAnalysis guess bonds, making the calculations significantly slower')
-    advanced_group.add_argument('-sf', '--sasafile', help='name of custom file containing the benchmarks of residue sasa located in benchmarks')
-    advanced_group.add_argument('-rf', '--rmsffile', help='name of custom file containing the benchmarks for sidechain rmsf located in benchmarks')
+    advanced_group.add_argument('-gb', '--guessbonds', default=False, help='lets MDAnalysis guess bonds if topology is missing, making the calculations significantly slower')
+    advanced_group.add_argument('-sf', '--sasafile', help='name of custom file containing the benchmarks of residue sasa located in benchmarks. overrides time/forcefield')
+    advanced_group.add_argument('-rf', '--rmsffile', help='name of custom file containing the benchmarks for sidechain rmsf located in benchmarks. overrides time/forcefield')
     advanced_group.add_argument('-rs', '--rangesur', default=8, help='range around the mutation used in the surrounding selection in Å')
     advanced_group.add_argument('-rt', '--rejecttraj', default=True, help='if set to True, rejects the trajectory with highest RMSD for each mutation')
     advanced_group.add_argument('-lc', '--lastcheck', default="", help='filename of the .csv from the last checkpoint from which to continue')
@@ -64,11 +64,11 @@ def main():
 
     # get the right benchmark curves, overwrite specified time if custom benchmark files are provided
     if args.sasafile == None:
-        sasa_file = 'range_sasa_{}ps.csv'.format(args.time)
+        sasa_file = 'range_sasa_{}ps_{}.csv'.format(args.time, args.forcefield)
     else:
         sasa_file = args.sasafile
     if args.rmsffile == None:
-        rmsf_file = 'range_rmsf_{}ps.csv'.format(args.time)
+        rmsf_file = 'range_rmsf_{}ps_{}.csv'.format(args.time, args.forcefield)
     else:
         rmsf_file = args.rmsffile
     print('using benchmark files:', sasa_file, rmsf_file)
