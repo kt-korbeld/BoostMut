@@ -19,9 +19,9 @@ After installing, BoostMut is run in the command line.  using:
 ```
 boostmut_run -h
 ```
-BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydrophobic surface exposure, and other structural checks. This can be done on three selections: the whole protein, 8Å surrounding a given mutation, or just the residue of the mutation. The final output returns a .csv with for each analysis and mutation the difference between mutant and wildtype. The analyses and the selections for each analysis can be customized in the command line. For example, if you want the surrounding and residue selections for hydrogen bonding, but only the whole protein selection for the other analyses, this can be specified with the -a flag for specifying the analyses, and the -s flag specifying each selection given as output per analysis:
+BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydrophobic surface exposure, and other structural checks. This can be done on three selections: the whole protein, 8Å surrounding a given mutation, or just the residue of the mutation. The final output returns a .csv with for each analysis and mutation the difference between mutant and wildtype. The analyses and the selections for each analysis can be customized in the command line. For example, if you want the surrounding and residue selections for hydrogen bonding, but only the whole protein selection for the other analyses, this can be specified with the -s flag with the desired analysis and selection divided by a colon:
 ```
-boostmut_run -i input_directory -s h:sr rsc:p 
+boostmut_run -i input_directory -s h:sr bsec:p 
 ```
 where the analyses are specified using:
 * h : hydrogen bonding
@@ -36,7 +36,7 @@ and the selections are specified using:
 * s : 8Å surrounding selection
 * r : residue selection
 
-By default, BoostMut assumes each trajectory is 50ps long. The analyses for the sidechain score and hydrophobic exposure rely on benchmark data for specific simulation lengths. The other analyses do not use benchmarks and therefore work the same regardless of timestep. In case longer simulations are used, benchmarks for each 50ps interval for simulations up to 1000ps long are provided. The appropriate benchmark files can be selected by providing the simulation length in the commandline interface:
+By default, BoostMut assumes each trajectory is 50ps long and simulated with an amber forcefield. The analyses for the sidechain score and hydrophobic exposure rely on benchmark data for specific simulation lengths. The other analyses do not use benchmarks and therefore work the same regardless of timestep. Benchmarks for different forcefields in 50ps intervals for simulations up to 1000ps long are provided. The appropriate benchmark files can be selected by providing the simulation length in the commandline interface:
 ```
 boostmut_run -i input_directory_500ps -t 500 -f opls
 ```
