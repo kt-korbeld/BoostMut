@@ -36,7 +36,7 @@ and the selections are specified using:
 * s : 8Å surrounding selection
 * r : residue selection
 
-By default, BoostMut assumes each trajectory is 50ps long and simulated with an amber forcefield. The analyses for the sidechain score and hydrophobic exposure rely on benchmark data for specific simulation lengths. The other analyses do not use benchmarks and therefore work the same regardless of timestep. Benchmarks for different forcefields in 50ps intervals for simulations up to 1000ps long are provided. The appropriate benchmark files can be selected by providing the simulation length in the commandline interface:
+By default, BoostMut assumes each trajectory is 50ps long and simulated with an amber forcefield. The analyses for the sidechain score and hydrophobic exposure rely on benchmark data for specific simulation lengths. The other analyses do not use benchmarks and therefore work the same regardless of timestep or forcefield. Benchmarks for different forcefields (available options are amber99, yamber3, charm27, and opls) in 50ps intervals for simulations up to 1000ps long are provided. The appropriate benchmark files can be selected by providing the simulation length in the commandline interface:
 ```
 boostmut_run -i input_directory_500ps -t 500 -f opls
 ```
