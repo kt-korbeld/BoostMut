@@ -4,6 +4,7 @@ requires = [
   "versioningit",
 ]
 build-backend = "setuptools.build_meta"
+#build-backend = "versioningit.build"
 
 [project]
 name = "BoostMut"

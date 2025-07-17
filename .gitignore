@@ -23,3 +23,6 @@ share/python-wheels/
 # trajectory offsets
 **/*_offsets.npz
 **/*_offsets.lock
+
+#jupyter notebook
+.ipynb_checkpoints/

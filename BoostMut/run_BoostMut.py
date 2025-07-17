@@ -64,11 +64,11 @@ def main():
 
     # get the right benchmark curves, overwrite specified time if custom benchmark files are provided
     if args.sasafile == None:
-        sasa_file = 'range_sasa_{}ps_{}.csv'.format(args.time, args.forcefield)
+        sasa_file = 'range_sasa_{}ps.csv'.format(args.time)
     else:
         sasa_file = args.sasafile
     if args.rmsffile == None:
-        rmsf_file = 'range_rmsf_{}ps_{}.csv'.format(args.time, args.forcefield)
+        rmsf_file = '{}_range_rmsf_{}ps.csv'.format(args.forcefield, args.time)
     else:
         rmsf_file = args.rmsffile
     print('using benchmark files:', sasa_file, rmsf_file)
