@@ -46,18 +46,24 @@ def load_universes(dir_path, topname, trajname, bondstabname='', guess_bonds=Fal
     if len(traj_files) == 0 or len(top_files) == 0:
         print('trajectory or topology file not found')
         return universes
-    # in case mutliple topology files are found try each and use first one that works
-    for top in top_files:
+
+    # find matching topology for trajectory
+    for traj in traj_files:
+        universe = []
         try:
-            if guess_bonds:
-                universes = [Universe(top, traj, guess_bonds=True) for traj in traj_files]
-            else:
-                universes = [Universe(top, traj) for traj in traj_files]
-            break
+            top = [os.path.splitext(traj) in i for i in top_files]
+            universe = MDAnalysis.Universe(top, traj, guess_bonds=guess_bonds)
         except:
-            print(top, 'did not provide the correct topology for:\n', traj_files)
-            universes = []
-            continue
+            for top in top_files:
+                try:
+                    universe = MDAnalysis.Universe(top, traj, guess_bonds=guess_bonds)
+                except:
+                    continue
+                break
+        if universe != []:
+            universes.append(universe)
+        else:
+            print('did not find the correct topology for:\n', traj)     
     if len(bondstabname) == 0:
         return universes
     # if seperate tab file with bond info is provided, add bonds from that
