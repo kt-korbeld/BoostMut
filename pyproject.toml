@@ -22,7 +22,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "MDAnalysis>=2.0.0",
-    "numpy",
+    "numpy<2.0",
     "pandas",
     "pydssp",
     "freesasa",

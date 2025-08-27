@@ -52,11 +52,12 @@ def load_universes(dir_path, topname, trajname, bondstabname='', guess_bonds=Fal
         universe = []
         try:
             top = [os.path.splitext(traj) in i for i in top_files]
-            universe = MDAnalysis.Universe(top, traj, guess_bonds=guess_bonds)
+            universe = Universe(top, traj, guess_bonds=guess_bonds)
         except:
+            print('checking: ', top_files)
             for top in top_files:
                 try:
-                    universe = MDAnalysis.Universe(top, traj, guess_bonds=guess_bonds)
+                    universe = Universe(top, traj, guess_bonds=guess_bonds)
                 except:
                     continue
                 break

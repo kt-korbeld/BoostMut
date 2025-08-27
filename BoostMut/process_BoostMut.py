@@ -1,7 +1,9 @@
 import os
 import pandas
+import warnings
 import argparse
 from .utils import *
+from .mk_benchmarks import *
 
 def main():
     parser = argparse.ArgumentParser(prog='BoostMut',
@@ -28,9 +30,18 @@ def main():
     scale_parser.add_argument('-s', '--metric_scale', type=int, nargs='+', default=[-1],  help='if additional metrics were added, specify if high scores are desirable (1) or undesirable (-1)')
     scale_parser.add_argument('-e', '--exclude_metric', type=str, nargs='+', default=[], help='metrics to exclude from total score')
 
+    # parser to create excel output
     excel_parser = subparsers.add_parser("excel", help="convert .csv output into a human-readable excel file")
     excel_parser.add_argument('-i', '--input', type=str, help='path of .csv with BoostMut outputs to be converted into a .xlsx file')
     excel_parser.add_argument('-o', '--output', type=str, help='name of the output .xlsx file')
+
+    # parser to create new benchmarks
+    bench_parser = subparsers.add_parser('benchmark', help='create new benchmarks for BoostMut')
+    bench_parser.add_argument('-i', '--inputdir', type=str, help='input directory containing subdirectories with trajectories for each mutation')
+    bench_parser.add_argument('-o', '--output', type=str, default='benchmark_new.csv', help='output .csv file with new benchmark curves')
+    bench_parser.add_argument('-m', '--mode', type=str, default='rmsf', help='generate rmsf or sasa benchmarks')
+    bench_parser.add_argument('-n1', '--topname', default='^[\w\d].*\.tpr$', help='regex each of the topology files has to satisfy')
+    bench_parser.add_argument('-n2', '--trajname', default='^[\w\d].*\.xtc$', help='regex each of the trajectory files has to satify')
     args = parser.parse_args()
 
     if args.command == "combine":
@@ -71,6 +82,19 @@ def main():
             generate_excel(df_in, excel_out=args.input)
         else:
             generate_excel(df_in, excel_out=args.output)
+
+    if args.command == 'benchmark':
+        if args.inputdir == None:
+            raise ValueError('No input directory specified')
+        if args.mode == 'rmsf':
+            print('making new rmsf benchmark with the name: ', args.output)
+            make_benchmark_rmsf(args.inputdir, args.trajname, args.topname, args.output)
+        elif args.mode == 'sasa':
+            print('making new sasa benchmark with the name: ', args.output)
+            make_benchmark_sasa(args.inputdir, args.trajname, args.topname, args.output)
+        else:
+           raise ValueError("Mode should be 'sasa' or 'rmsf'")
+
 
 if __name__ == "__main__":
     main()
