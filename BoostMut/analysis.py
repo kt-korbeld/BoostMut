@@ -82,7 +82,7 @@ def ehbo_yasara(universe_in, hbonds,
     [[h_a_x.append(h+a+x) for x in a.bonded_atoms if x in atomgroup] for h, a in zip(hyd, accept)]
     # get angle for each X and whether or not X is a hydrogen
     angle_h_a_x = [hax.angle.value() for hax in h_a_x]
-    hyd_h_a_x = [x.type == 'H' for h, a, x in h_a_x]
+    hyd_h_a_x = [x.element == 'H' for h, a, x in h_a_x]
     # calculate scale for H-A-X depending on whether it is a hydrogen or not
     scale_h_a_x = [max(0, min(1, 1/10*(angle-75))) if hyd else
                    max(0, min(1, 1/10*(angle-85))) for angle, hyd in zip(angle_h_a_x, hyd_h_a_x)]
@@ -355,7 +355,7 @@ def get_sasa(atomgroup, selection='R'):
                   "CA": 2.310, "NI": 1.630, "CU": 1.400, "ZN": 1.390, "SE": 1.900, "BR": 1.850,
                   "CD": 1.580, "I": 1.980, "HG": 1.550}
     # calcuating sasa requires coordinates and radii per atom
-    atomtypes = atomgroup.atoms.types
+    atomtypes = atomgroup.atoms.elements
     radii = np.vectorize(radii_atomtypes.get)(atomtypes)
     coords = atomgroup.atoms.positions.flatten()
     sasa_result = freesasa.calcCoord(coords, radii, param)
