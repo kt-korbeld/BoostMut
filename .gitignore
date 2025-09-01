@@ -26,3 +26,6 @@ share/python-wheels/
 
 #jupyter notebook
 .ipynb_checkpoints/
+
+#macOS
+.DS_Store
