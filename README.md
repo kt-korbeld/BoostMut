@@ -48,7 +48,6 @@ boostmut_run -i input_directory_500ps -t 500 -f opls
 For faster calculations (the main computational cost comes from re-aligning the structure for each side-chain when calculating the sidechain score) or simulations for which no forcefield benchmarks are available, the sidechain score and hydrophobic exposure can be left out of the analysis selection:
 ```
 boostmut_run -i input_directory -s hb:sr c:p 
-
 ```
 After the calculations have finished, the output can be processed with one of the tools in `boostmut_process` if needed. If the calculation of the mutations has been split up into separate parallel runs, the output has to be combined and rescaled. 
 Combining can be done using `boostmut_process combine`. Rescaling the newly combined output file, or adding additional metrics can be done using `boostmut_process scale`. To obtain an easy human-readable excel version of the data, use `boostmut_process excel`. 
