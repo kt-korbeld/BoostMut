@@ -13,7 +13,7 @@ input_directory
     ├── ...
     ├── trajectory_5.xtc
     └── topology.tpr
-
+```
 BoostMut is pip installable. It can be installed using pip. To avoid conflicts with other packages, it is safest to do this within a virtual environment:
 ```
 python -m venv boostmut-venv
