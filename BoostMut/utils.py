@@ -196,7 +196,7 @@ def get_columnnames(selection=['hbse:sr', 'c:p']):
                 columns.extend([c])
             else:
                 columns.extend([c+'_'+i for i in 'psr' if i in sel_dict[an]])
-    return columns
+    return columns, analyses
 
 def generate_excel(df_in, excel_out):
     '''
