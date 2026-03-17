@@ -54,8 +54,8 @@ def main():
         raise Exception('no mutant directories found using regex pattern')
 
     # get column names of output df
-    cols_full = get_columnnames(selection=['hbsec:psr'])
-    cols_sel = get_columnnames(selection=args.selection)
+    cols_full, an_full = get_columnnames(selection=['hbsec:psr'])
+    cols_sel, an_sel = get_columnnames(selection=args.selection)
     print(cols_full)
     print(cols_sel)
     if len(args.lastcheck) > 0:
@@ -76,14 +76,14 @@ def main():
     # load WT trajectories into MDAnalysis and initialize BoostMut with the WT analysis
     wt_universes = load_universes(wt_path, topname=args.topname, trajname=args.trajname, bondstabname=args.bondsname, guess_bonds=args.guessbonds)
     boostmut = BoostMut(wt_universes, mut_ids=sorted(list(set(mutpos))), rmsf_loc=rmsf_file, sasa_loc=sasa_file, reject_trj=args.rejecttraj)
-    boostmut.do_analysis_WT(mut_ids=sorted(list(set(mutpos))), analyses=args.analysis)
+    boostmut.do_analysis_WT(mut_ids=sorted(list(set(mutpos))), analyses=an_sel)
 
     # go over each of the mutations and analyze
     data_out, index_out = [], []
     for mut, pos, path in zip(muts, mutpos, mut_paths):
         print(mut, pos, path)
         mut_universes = load_universes(path, topname=args.topname, trajname=args.trajname, bondstabname=args.bondsname, guess_bonds=args.guessbonds)
-        data_mut = boostmut.do_analysis_mut(mut_universes, mut_ids=[pos], analyses=args.analysis, reject_trj=args.rejecttraj)
+        data_mut = boostmut.do_analysis_mut(mut_universes, mut_ids=[pos], analyses=an_sel, reject_trj=args.rejecttraj)
         index_out.append(mut)
         data_out.append(data_mut)
         if args.checkpoint:
