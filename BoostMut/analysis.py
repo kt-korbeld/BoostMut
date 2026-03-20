@@ -526,8 +526,8 @@ def get_saltbridge(universe_in, selection, distance=4):
     sel_pos = '{} or {}'.format(sel_nterm, sel_sc_pos)
     sel_neg = '{} or {}'.format(sel_cterm, sel_sc_neg)
     # find all positive res engaged in a saltbridge and all negative res engaged in a salt bridge
-    sb_pos = universe_in.select_atoms('({0} and around {3} {1}) and {2}'.format(sel_sb_pos, sel_sb_neg, selection, distance))
-    sb_neg = universe_in.select_atoms('({1} and around {3} {0}) and {2}'.format(sel_sb_pos, sel_sb_neg, selection, distance))
+    sb_pos = universe_in.select_atoms('({0} and around {3} {1}) and {2}'.format(sel_pos, sel_neg, selection, distance))
+    sb_neg = universe_in.select_atoms('({1} and around {3} {0}) and {2}'.format(sel_pos, sel_neg, selection, distance))
     # since one Arginine might have multiple partners, use max between positive and negative as true count
     return max(len(sb_pos), len(sb_neg))
 

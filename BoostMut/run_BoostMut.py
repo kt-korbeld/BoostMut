@@ -54,9 +54,9 @@ def main():
         raise Exception('no mutant directories found using regex pattern')
 
     # get column names of output df
-    cols_full, an_full = get_columnnames(selection=['hbsec:psr'])
+    #cols_full, an_full = get_columnnames(selection=['hbsec:psr'])
     cols_sel, an_sel = get_columnnames(selection=args.selection)
-    print(cols_full)
+    cols_full, an_full = get_columnnames(selection=[an_sel+':psr'])
     print(cols_sel)
     if len(args.lastcheck) > 0:
         if cols_sel != list(df_done.columns):
