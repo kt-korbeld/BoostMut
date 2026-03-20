@@ -24,6 +24,7 @@ dependencies = [
     "MDAnalysis>=2.0.0",
     "numpy<2.0",
     "pandas",
+    "BioPython",
     "pydssp",
     "freesasa",
     "xlsxwriter"
