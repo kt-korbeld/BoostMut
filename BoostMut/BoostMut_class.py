@@ -273,7 +273,6 @@ class BoostMut:
         res_score = np.array(res_score)
         # turn into a dataframe to access the right values using resids
         score_sc_out = []
-        df_rmsf_bb = pd.DataFrame(data=rmsf_bb, index=prot.residues.resids)
         df_score_sc = pd.DataFrame(data=res_score, index=prot.residues.resids)
         # for reach residue return average values for the protein, surrounding, and residue
         for resid in mut_ids:
