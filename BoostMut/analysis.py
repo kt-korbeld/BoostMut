@@ -240,7 +240,8 @@ def get_pydssp(atomgroup):
     '''
     bb_atoms = ['N', 'CA', 'C', 'O']
     backbone_res = atomgroup.select_atoms('backbone').residues
-    coord = np.array([[atom.position for atom in r.atoms if atom.name in bb_atoms] for r in backbone_res])
+    # include :3 to guarantee always 4 b atoms are used
+    coord = np.array([[atom.position for atom in r.atoms if atom.name in bb_atoms][:3] for r in backbone_res])
     secstr = pydssp.assign(coord, out_type='c3')
     return secstr
 
