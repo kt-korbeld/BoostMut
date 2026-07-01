@@ -240,8 +240,21 @@ def get_pydssp(atomgroup):
     '''
     bb_atoms = ['N', 'CA', 'C', 'O']
     backbone_res = atomgroup.select_atoms('backbone').residues
-    # include :3 to guarantee always 4 b atoms are used
-    coord = np.array([[atom.position for atom in r.atoms if atom.name in bb_atoms][:3] for r in backbone_res])
+    coord = []
+    # check if all 4 backbone atoms exist in res
+    for r in backbone_res:
+        res_coord = []
+        for bb in bb_atoms:
+            for atom in r.atoms:
+                if atom.name == bb:
+                    res_coord.append(atom.position)
+                    break
+        # if not, set to zeroes (will be assigned coil)
+        if len(res_coord) != 4:
+            coord.append(np.zeros((4,3)))
+        else:
+            coord.append(res_coord)
+    coord = np.array(coord)
     secstr = pydssp.assign(coord, out_type='c3')
     return secstr
 
