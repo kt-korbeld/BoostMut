@@ -14,7 +14,6 @@ from MDAnalysis.analysis import rms
 
 from scipy.optimize import curve_fit
 from scipy.stats import poisson
-import seaborn as sns
 from sklearn.neighbors import KernelDensity
 from scipy.stats import iqr
 
