@@ -392,7 +392,7 @@ def compute_shrakerupley(atomgroup, probe_radius=1.40, n_points=100, radii_dict=
         if not n_atoms:
             raise ValueError("Entity has no child atoms.")
         # Get coordinates as a numpy array
-        coords = prot.atoms.positions.astype(np.float64)
+        coords = atomgroup.atoms.positions.astype(np.float64)
         # Pre-compute atom neighbors using KDTree
         kdt = KDTree(coords, 10)
         # Pre-compute radius * probe table
