@@ -1,6 +1,7 @@
 # default python libraries
 import re
 import os
+import math
 import itertools
 from importlib import resources
 import warnings
@@ -25,7 +26,10 @@ from MDAnalysis.analysis.base import AnalysisFromFunction
 
 # packages for secondary structure and solvent accesible surface
 import pydssp
-import freesasa
+
+#import freesasa
+from Bio.PDB.kdtrees import KDTree
+
 
 # yasara hydrogen bond energy function
 # =======================================================================================================
@@ -353,6 +357,74 @@ def get_helix_score(resnames, secstr, buffer=5):
 # all functions dealing with solvent accesible surface
 # =======================================================================================================
 
+def compute_sphere(n_points=100):
+    """
+    Return the 3D coordinates of n points on a sphere.
+    Used by the ShrakeRupley implementation
+    Uses the golden spiral algorithm to place points 'evenly' on the sphere
+    """
+    n = n_points
+    dl = np.pi * (3 - 5**0.5)
+    dz = 2.0 / n
+    longitude = 0
+    z = 1 - dz / 2
+    coords = np.zeros((n, 3), dtype=np.float32)
+    for k in range(n):
+        r = (1 - z * z) ** 0.5
+        coords[k, 0] = math.cos(longitude) * r
+        coords[k, 1] = math.sin(longitude) * r
+        coords[k, 2] = z
+        z -= dz
+        longitude += dl
+    return coords
+
+def compute_shrakerupley(atomgroup, probe_radius=1.40, n_points=100, radii_dict={}, level="A"):
+        """
+        Calculate surface accessibility surface area for an entity.
+        Based on the function implemented in BioPython but using MDAnalysis atomgroups 
+        rather than the Bio.struct class
+        """
+        # generate reference sphere
+        sphere = compute_sphere()
+        # Get atoms onto list for lookup
+        atoms = atomgroup.atoms
+        n_atoms = len(atoms)
+        if not n_atoms:
+            raise ValueError("Entity has no child atoms.")
+        # Get coordinates as a numpy array
+        coords = prot.atoms.positions.astype(np.float64)
+        # Pre-compute atom neighbors using KDTree
+        kdt = KDTree(coords, 10)
+        # Pre-compute radius * probe table
+        radii = np.array([radii_dict[a.element] for a in atoms], dtype=np.float64)
+        radii += probe_radius
+        twice_maxradii = np.max(radii) * 2
+        # Calculate ASAs
+        asa_array = np.zeros((n_atoms, 1), dtype=np.int64)
+        ptset = set(range(n_points))
+        for i in range(n_atoms):
+            r_i = radii[i]
+            # Move sphere to atom
+            s_on_i = (np.array(sphere, copy=True) * r_i) + coords[i]
+            available_set = ptset.copy()
+            # KDtree for sphere points
+            kdt_sphere = KDTree(s_on_i, 10)
+            # Iterate over neighbors of atom i
+            for jj in kdt.search(coords[i], twice_maxradii):
+                j = jj.index
+                if i == j:
+                    continue
+                if jj.radius < (r_i + radii[j]):
+                    # Remove overlapping points on sphere from available set
+                    available_set -= {
+                        pt.index for pt in kdt_sphere.search(coords[j], radii[j])}
+            asa_array[i] = len(available_set)  # update counts
+        # Convert accessible point count to surface area in A**2
+        f = radii * radii * (4 * np.pi / n_points)
+        asa_array = asa_array * f[:, np.newaxis]
+        return asa_array.flatten()
+
+
 def get_sasa(atomgroup, selection='R'):
     '''
     for a given MDAnalysis universe or atom group,
@@ -360,20 +432,21 @@ def get_sasa(atomgroup, selection='R'):
     selection can return sasa for A (atom), R (residue) or S (structure)
     '''
     #set algorithm to shrake-rupley, set probe radius if neccesary
-    param = freesasa.Parameters()
-    param.setAlgorithm('ShrakeRupley')
-    param.setProbeRadius(1.4)
+    #param = freesasa.Parameters()
+    #param.setAlgorithm('ShrakeRupley')
+    #param.setProbeRadius(1.4)
     # standard radii taken from the biopython implementation of shake-rupley
     radii_atomtypes= {"H": 1.200, "HE": 1.400, "C": 1.700, "N": 1.550, "O": 1.520, "F": 1.470,
                   "NA": 2.270, "MG": 1.730, "P": 1.800, "S": 1.800, "CL": 1.750, "K": 2.750,
                   "CA": 2.310, "NI": 1.630, "CU": 1.400, "ZN": 1.390, "SE": 1.900, "BR": 1.850,
                   "CD": 1.580, "I": 1.980, "HG": 1.550}
     # calcuating sasa requires coordinates and radii per atom
-    atomtypes = atomgroup.atoms.elements
-    radii = np.vectorize(radii_atomtypes.get)(atomtypes)
-    coords = atomgroup.atoms.positions.flatten()
-    sasa_result = freesasa.calcCoord(coords, radii, param)
-    sasa_atom = np.array([sasa_result.atomArea(i) for i, a in enumerate(atomgroup.atoms)])
+    #atomtypes = atomgroup.atoms.elements
+    #radii = np.vectorize(radii_atomtypes.get)(atomtypes)
+    #coords = atomgroup.atoms.positions.flatten()
+    #sasa_result = freesasa.calcCoord(coords, radii, param)
+    #sasa_atom = np.array([sasa_result.atomArea(i) for i, a in enumerate(atomgroup.atoms)])
+    sasa_atom = compute_shrakerupley(atomgroup, radii_dict=radii_atomtypes)
     # sasa per atom
     if selection == 'A':
         return sasa_atom

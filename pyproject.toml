@@ -26,7 +26,8 @@ dependencies = [
     "pandas",
     "BioPython",
     "pydssp",
-    "freesasa",
+    "scipy",
+    "scikit-learn",
     "xlsxwriter"
 ]
 keywords = [

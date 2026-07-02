@@ -3,7 +3,6 @@ import re
 import warnings
 import numpy as np
 import pandas as pd
-import freesasa
 
 import MDAnalysis
 from MDAnalysis.analysis.base import AnalysisFromFunction
