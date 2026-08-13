@@ -579,17 +579,19 @@ def get_good_range_ix(res, firstres, lastres, ref_len):
     '''
     get a selection of ref_len residues around a given residue,
     making sure that sufficient residues are taken if near the start/end
+    the output is ix, which is an index from 0 to the number of res. 
+    this is deliberate, but should not be confused with resid
     '''
     #print(res.resid, res.ix, res.resid - ref_len < firstres)
     # if there are insufficient residues at the front, use res at the end
     if res.resid - ref_len < firstres:
-        ix_res_range = [res.ix, res.ix+2*ref_len]
+        ix_res_range = [res.ix, res.ix+2*ref_len+1]
     # if there are insufficient residues at the end, use res at the front
     elif res.resid + ref_len > lastres:
-        ix_res_range = [res.ix-2*ref_len, res.ix]
+        ix_res_range = [res.ix-2*ref_len, res.ix+1]
     # otherwise just take normal range
     else:
-        ix_res_range = [res.ix-ref_len, res.ix+ref_len]
+        ix_res_range = [res.ix-ref_len, res.ix+ref_len+1]
     return [*range(*ix_res_range)]
 
 def find_xy_dens(dens_df, classification):
