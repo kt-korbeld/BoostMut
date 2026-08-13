@@ -1,3 +1,4 @@
+import MDAnalysis
 from .analysis import *
 from importlib import resources
 
@@ -241,7 +242,12 @@ class BoostMut:
         '''
         # calculate rmsf of the sidechains, excluding hydrogen
         rmsf_res = []
-        prot = universe_in.select_atoms('protein')
+        # even on protein selection, alignment transforms all atoms including water. create just prot universe
+        prot_u = MDAnalysis.Merge(universe_in.select_atoms('protein'))
+        coords = np.array([universe_in.select_atoms('protein').positions.copy() for _ in universe_in.trajectory])
+        prot_u = prot_u.load_new(coords, format=MDAnalysis.coordinates.memory.MemoryReader)
+        prot = prot_u.select_atoms('protein')
+        # prepare average and range to iterate over
         firstres, lastres = min(prot.residues.resids), max(prot.residues.resids)
         average = align.AverageStructure(universe_in, universe_in, select='protein', ref_frame=0).run()
         average = average.results.universe
