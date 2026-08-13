@@ -293,7 +293,9 @@ def matchmotifs(sequence, cap, startorend,  buffer=5):
     for pos, motif in motifs:
         # add buffer around range in case the secondary structure is off
         posind = tuple(map(sum, zip(pos, (-buffer, buffer))))
-        seq = ''.join(sequence[posind[0]+cap:posind[1]+cap]) 
+        # make sure lowerbound does not become negative and index C-term
+        lowerbound = max(0, posind[0]+cap)
+        seq = ''.join(sequence[lowerbound:posind[1]+cap])
         #convert capping motifs into regex using dictionary of resclasses
         regexmotif =''.join([resclasses[i] for i in motif])
         foundmotif = not (None == re.search(regexmotif, seq))
@@ -348,7 +350,10 @@ def get_helix_score(resnames, secstr, buffer=5):
                           'HIS':0.66, 'CYS':0.68, 'ASP':0.69, 'GLY':1, 'PRO':3.16}
     helix_score = 0
     for ind in range(0, len(secstr)):
-        ss = secstr[ind-(buffer):ind+(buffer+1)]
+        ss = secstr[max(0, ind-buffer):ind+buffer+1]
+        # make sure C-term is treated symmetrically
+        if not len(ss) == 2*buffer+1:
+            continue
         res = resnames[ind]
         if np.all(ss == 'H'):
             helix_score+=helix_propensities[res]
@@ -385,7 +390,7 @@ def compute_shrakerupley(atomgroup, probe_radius=1.40, n_points=100, radii_dict=
         rather than the Bio.struct class
         """
         # generate reference sphere
-        sphere = compute_sphere()
+        sphere = compute_sphere(n_points)
         # Get atoms onto list for lookup
         atoms = atomgroup.atoms
         n_atoms = len(atoms)
@@ -634,13 +639,8 @@ def iterate_analysis(mut_universes, function, mut_ids=[]):
     iterate analysis of a function over multiple universes,
     and average the result
     '''
-    out = []
-    for mut_universe in mut_universes:
-        vars_out = function(mut_universe.copy(), mut_ids=mut_ids)
-        if len(out) == 0:
-            out = vars_out
-        out = [np.round(np.average(np.array([i,j]), axis=0), 4) for i, j in zip(out, vars_out)]
-    return tuple(out)
+    results = [function(u.copy(), mut_ids=mut_ids) for u in mut_universes]
+    return tuple(np.round(np.mean(np.array(vals), axis=0), 4) for vals in zip(*results))
 
 def write_sub_trajectory(universe, filename_out='out.xtc', start=0, end=0):
     '''
