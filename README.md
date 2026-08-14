@@ -98,6 +98,7 @@ Which takes the column `-n foldx_ddg` from the file `-m MutationsEnergies_Comple
 boostmut_process scale -i BoostMut_combined.csv -n foldx_ddg -s -1 -o BoostMut_combined_scaled.csv
 ```
 Which rescales all the BoostMut columns, and rescales any added metric specified using `-n foldx_ddg` by scaling factor `-s -1`. FoldX reports stabilizing mutations as negative ΔΔG scores, so the -1 guarantees stabilizing mutations result in high scaled scores. How a metric needs to be scaled depends on  how the primary predictor reports its output. 
+The final output can be visualized by generating an excel file using `boostmut_process excel` or by using the shiny app at https://fuerstlab.shinyapps.io/BoostMutUI/
 
 
 
