@@ -55,7 +55,10 @@ By default BoostMut assumes `Subdir_template` as the directory name for the wild
 ```
 boostmut_run --inputdir input_directory
 ```
-
+The provided example files are trajectories and topologies converted from an example FRESCO run, where the proprietary YASARA .sim files have been converted into .xtc files and a .pdb with bond information is used as a topology file. In this case, the default topology regex should be changed to accept .pdb files instead:
+```
+boostmut_run --inputdir input_directory --topname "^[\w\d].*\.pdb$"
+```
 ## Analyses
 BoostMut can analyze hydrogen bonding, RMSF of backbone and sidechains, hydrophobic surface exposure, and other structural checks. This can be done on three selections: the whole protein, 8Å surrounding a given mutation, or just the residue of the mutation. The final output returns a .csv with for each analysis and mutation the difference between mutant and wildtype. The analyses and the selections for each analysis can be customized in the command line. For example, if you want the surrounding and residue selections for hydrogen bonding, but only the whole protein selection for the other analyses, this can be specified with the -s flag with the desired analysis and selection divided by a colon:
 ```
@@ -86,7 +89,15 @@ boostmut_run --inputdir input_directory --selection hb:sr c:p
 After the calculations have finished, the output can be processed with one of the tools in `boostmut_process` if needed. If the calculation of the mutations has been split up into separate parallel runs, the output has to be combined and rescaled. 
 Combining can be done using `boostmut_process combine`. Rescaling the newly combined output file, or adding additional metrics can be done using `boostmut_process scale`. To obtain an easy human-readable excel version of the data, use `boostmut_process excel`. 
 
-
+BoostMut tends to perform best if the primary predictors is included as an additional metric into the total ranking. For FRESCO, this means including the FoldX score. This requires the FoldX scores in a .csv format. The unscaled energies should be added to the unscaled BoostMut scores using:
+```
+boostmut_process combine  -i BoostMut_out.csv -m MutationsEnergies_CompleteList_FoldX.csv -n foldx_ddg -o BoostMut_combined.csv
+```
+Which takes the column `-n foldx_ddg` from the file `-m MutationsEnergies_CompleteList_FoldX.csv`, matches the right rows with the mutations in `-i BoostMut_out.csv`, and saves the result as a new .csv. This file can then be rescaled using:
+```
+boostmut_process scale -i BoostMut_combined.csv -n foldx_ddg -s -1 -o BoostMut_combined_scaled.csv
+```
+Which rescales all the BoostMut columns, and rescales any added metric specified using `-n foldx_ddg` by scaling factor `-s -1`. FoldX reports stabilizing mutations as negative ΔΔG scores, so the -1 guarantees stabilizing mutations result in high scaled scores. How a metric needs to be scaled depends on  how the primary predictor reports its output. 
 
 
 
