@@ -127,7 +127,7 @@ class BoostMut:
         for i, out in enumerate(output):
             if out.shape[0] > 1:
                 output[i] = np.average(out, axis=0)
-        return np.round(np.concatenate(tuple(output), axis=None),4)
+        return np.round(np.concatenate(tuple(output), axis=None),6)
 
     def do_hbond_analysis(self, universe_in, mut_ids=[], scale_e=False):
         '''
