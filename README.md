@@ -87,13 +87,17 @@ boostmut_run --inputdir input_directory --selection hb:sr c:p
 ```
 ## Processsing
 After the calculations have finished, the output can be processed with one of the tools in `boostmut_process` if needed. If the calculation of the mutations has been split up into separate parallel runs, the output has to be combined and rescaled. 
-Combining can be done using `boostmut_process combine`. Rescaling the newly combined output file, or adding additional metrics can be done using `boostmut_process scale`. To obtain an easy human-readable excel version of the data, use `boostmut_process excel`. 
+Combining parallel runs can be done using `boostmut_process combine`. Rescaling the newly combined output file, or adding additional metrics can be done using `boostmut_process scale`. To obtain an easy human-readable excel version of the data, use `boostmut_process excel`. 
 
-BoostMut tends to perform best if the primary predictors is included as an additional metric into the total ranking. For FRESCO, this means including the FoldX score. This requires the FoldX scores in a .csv format. The unscaled energies should be added to the unscaled BoostMut scores using:
+BoostMut tends to perform best if the best primary predictors are included as an additional metric into the total ranking. For FRESCO, this means including the FoldX score. A .csv with the scores of the primary predictor can be added using the `-m` flag in `boostmut_process combine`. This flag accepts either the `MutationsEnergies_CompleteList_FoldX.tab` or `MutationsEnergies_CompleteList_Rosetta.tab` files generated druring the FRESCO protocol, or any other metric in a .csv format:
 ```
-boostmut_process combine  -i BoostMut_out.csv -m MutationsEnergies_CompleteList_FoldX.csv -n foldx_ddg -o BoostMut_combined.csv
+boostmut_process combine  -i BoostMut_out.csv -m MutationsEnergies_CompleteList_FoldX.tab -n foldx_ddg -o BoostMut_combined.csv
 ```
-Which takes the column `-n foldx_ddg` from the file `-m MutationsEnergies_CompleteList_FoldX.csv`, matches the right rows with the mutations in `-i BoostMut_out.csv`, and saves the result as a new .csv. This file can then be rescaled using:
+Which takes the energies form the file specified with `-m`, matches the right rows with the mutations in the boostmut output specified with `-i`, and saves the result as a new .csv under the column name specified with `-n`. To do the same thing with a .csv file for other metrics:
+```
+boostmut_process combine  -i BoostMut_out.csv -m predictor_1.csv -n pred_1 -o BoostMut_combined.csv
+```
+Selects the column specified with `-n` from the file specified with `-m` and similarly matches the right rows with the mutations in boostmut output specified with `-i`. The file with the added predictors can then be rescaled using:
 ```
 boostmut_process scale -i BoostMut_combined.csv -n foldx_ddg -s -1 -o BoostMut_combined_scaled.csv
 ```
