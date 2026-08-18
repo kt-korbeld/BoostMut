@@ -12,7 +12,7 @@ python -m venv boostmut-venv
 source boostmut-venv/bin/activate
 pip install BoostMut
 ```
-BoostMut relies on the `freesasa` package to calculate solvent accessible surface. This package makes use of Cython to optimise calculations, which can cause problems in cases where C compilers are missing. After installing, BoostMut has a command line interface called `boostmut_run` for running calculations, and `boostmut_process` for processing the outputs. To get an overview of the available input flags, use:
+After installing, BoostMut has a command line interface called `boostmut_run` for running calculations, and `boostmut_process` for processing the outputs. To get an overview of the available input flags, use:
 ```
 boostmut_run -h
 boostmut_process -h
