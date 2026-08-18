@@ -3,7 +3,7 @@ from .analysis import *
 from importlib import resources
 
 class BoostMut:
-    def __init__(self, WT_universes, mut_ids=[], rmsf_loc='range_rmsf.csv', sasa_loc='range_sasa.csv', reject_trj=True, step=1):
+    def __init__(self, WT_universes, mut_ids=[], rmsf_loc='range_rmsf.csv', sasa_loc='range_sasa.csv', reject_trj=True, step=1, dist_cutoff=8):
         '''
         Since each metric is compared with the WT, and each metric is checked for different selections,
         the WT results for each metrics must be stored before a selection is made.
@@ -26,7 +26,7 @@ class BoostMut:
         resids.sort()
         for resid in resids:
             sel_s = 'resid {} and name CA'.format(resid)
-            surround_sel = get_surround_sel(example_prot, sel_s, dist_cutoff=8)
+            surround_sel = get_surround_sel(example_prot, sel_s, dist_cutoff=dist_cutoff)
             s_resids = surround_sel.residues.resids
             surround_sel_ids.append(s_resids)
         self.WTresids = resids
