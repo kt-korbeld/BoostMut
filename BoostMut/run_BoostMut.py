@@ -25,7 +25,7 @@ def main():
     advanced_group.add_argument('-gb', '--guessbonds', default=False, help='lets MDAnalysis guess bonds if topology is missing, making the calculations significantly slower')
     advanced_group.add_argument('-sf', '--sasafile', help='name of custom file containing the benchmarks of residue sasa located in benchmarks. overrides time/forcefield')
     advanced_group.add_argument('-rf', '--rmsffile', help='name of custom file containing the benchmarks for sidechain rmsf located in benchmarks. overrides time/forcefield')
-    advanced_group.add_argument('-rs', '--rangesur', default=8, help='range around the mutation used in the surrounding selection in Å')
+    advanced_group.add_argument('-rs', '--rangesur', default=8, type=float, help='range around the mutation used in the surrounding selection in Å')
     advanced_group.add_argument('-rt', '--rejecttraj', default=True, help='if set to True, rejects the trajectory with highest RMSD for each mutation')
     advanced_group.add_argument('-lc', '--lastcheck', default="", help='filename of the .csv from the last checkpoint from which to continue')
     advanced_group.add_argument('-cp', '--checkpoint', default=True, help='if set to True, saves the result after each mutation')
@@ -75,7 +75,7 @@ def main():
 
     # load WT trajectories into MDAnalysis and initialize BoostMut with the WT analysis
     wt_universes = load_universes(wt_path, topname=args.topname, trajname=args.trajname, bondstabname=args.bondsname, guess_bonds=args.guessbonds)
-    boostmut = BoostMut(wt_universes, mut_ids=sorted(list(set(mutpos))), rmsf_loc=rmsf_file, sasa_loc=sasa_file, reject_trj=args.rejecttraj)
+    boostmut = BoostMut(wt_universes, mut_ids=sorted(list(set(mutpos))), rmsf_loc=rmsf_file, sasa_loc=sasa_file, reject_trj=args.rejecttraj, dist_cutoff=float(args.rangesur))
     boostmut.do_analysis_WT(mut_ids=sorted(list(set(mutpos))), analyses=an_sel)
 
     # go over each of the mutations and analyze
