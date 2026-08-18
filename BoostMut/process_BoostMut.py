@@ -20,7 +20,6 @@ def main():
     combine_parser.add_argument('-o', '--output', type=str, default='BoostMut_combined.csv', help='name of combined output .csv file')
     combine_parser.add_argument('-m', '--add_metric', type=str, nargs='+', default=[], help='one or more .csv files with scores of primary predictor or other metrics to add to the BoostMut evaluation')
     combine_parser.add_argument('-n', '--metric_name', type=str, nargs='+', default=['primary_pred'], help='column names of new metrics added in output if add_metric is specified')
-    combine_parser.add_argument('-c', '--metric_col', type=int, nargs='+', default=[1], help='column numbers to use in each .csv file specified in add_metric')
 
     # parser to scale output
     scale_parser = subparsers.add_parser("scale", help="scale given BoostMut output by its standard deviation")
@@ -53,7 +52,7 @@ def main():
         df_combined = combine_df(dfs_set)
         # combine with additional scores if provided
         if len(args.add_metric) != 0:
-            df_combined = add_predictors(df_combined, args.add_metric, args.metric_col, args.metric_name)
+            df_combined = add_predictors(df_combined, args.add_metric, args.metric_name)
         df_combined.to_csv(args.output)
         print('output saved as ', args.output)
 
